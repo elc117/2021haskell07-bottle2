@@ -1,4 +1,5 @@
 import Text.Printf
+import Data.Char
 
 totalWidth :: Int
 totalWidth = 500
@@ -56,7 +57,8 @@ svgBars bits =
   let len = length bits
       gap = div totalWidth len           -- divisao inteira (não preenche bem o espaço)
       --gap = round (fromIntegral totalWidth / fromIntegral len) -- divisao com arredondamento preenche melhor
-      bars = [bar x gap | x <- [0..len]] -- aqui são calculadas todas as coordenadas
+      --bars = [bar x gap | x <- [0..len]] -- aqui são calculadas todas as coordenadas
+      bars = altBarList bits gap
       cs = map svgColor bits             -- aqui são definidas as cores conforme os bits
    in zipWith svgLine bars cs            -- aqui as coordenadas são combinadas com as cores para produzir linhas
    
@@ -67,7 +69,22 @@ svgBars bits =
 -- Visualizar as strings que compõem o SVG é útil para compreender a saída das funções
 main :: IO()
 main = do
-  let bits = "101111000101010101" 
+  let bits = "1011110001010101011111101010000010101111110" 
       stringList = svgBars bits
   putStr (svgDoc totalWidth totalHeight stringList)
 
+-- Atividades
+
+isBin :: String -> Bool
+isBin [] = True
+isBin (s:ss) = (s == '0' || s == '1') && isBin ss
+
+bitPos :: String -> [(Char, Int)]
+bitPos s = zipWith (\c i -> (c, i)) s [0..]
+
+altBarList :: String -> Int -> [((Int, Int), (Int, Int))]
+altBarList s gap = zipWith barMaker s [0..(length s)]
+  where barMaker = (\x i -> if x == '0' then bar i gap else flipbar i gap)
+
+binToDec :: String -> Int
+binToDec s = sum $ zipWith (\d e -> d * 2^e) (map digitToInt s) [(length s - 1), (length s - 2)..0] 
